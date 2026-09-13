@@ -1,0 +1,379 @@
+@font-face {
+  font-family: 'Umbraal';
+  src: url('../assets/Umbraal-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  --parchment: #f2e3c3;
+  --ink: #1e1811;
+  --ink-soft: #2b2318;
+  --oxblood: #7b1113;
+  --brass: #b08a34;
+  --bone: #e8dcc0;
+
+  --plaque-h: 3.25rem;
+  --plaque-w-max: 7.27rem;
+  --plaque-gap: 0.7rem;
+  --plaque-pad: 1.15rem;
+  /* Never wider than a third of the usable bar, so three buttons fit a narrow
+     phone without the row running off the edge. */
+  --plaque-w: min(
+    var(--plaque-w-max),
+    (100vw - 2 * var(--gutter) - 2 * var(--plaque-gap)) / 3);
+  --plaque-bevel: 0.24rem;   /* corner cut */
+  --plaque-edge: 3px;        /* brass frame around the face */
+
+  --summary-face: 4.5rem;    /* die face size in the count summary */
+  --tile-w: 4.3rem;          /* picker cell, sized just past the die art */
+  --tile-h: 3.9rem;
+  --col-gap: 1.3rem;
+  --gutter: 1.25rem;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* Panels stop short of the plaque bar so Roll is never covered. */
+  --bar-space: calc(var(--plaque-h) + var(--gutter) * 2 + var(--safe-b));
+}
+
+* { box-sizing: border-box; }
+
+/* Author rules beat the UA stylesheet, so any class that sets `display` would
+   otherwise override [hidden] and paint anyway. .panel and .fallback both do. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#table {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.plaques {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--gutter) + var(--safe-b));
+  z-index: 40;
+  display: flex;
+  gap: var(--plaque-gap);
+  pointer-events: none;
+}
+
+/* All three sit in the flow and the row stays centred, so the set re-centres
+   itself as Reroll comes and goes. */
+
+.plaque {
+  pointer-events: auto;
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  height: var(--plaque-h);
+  width: var(--plaque-w);
+  min-width: 0;
+  /* Padding, not a margin on the child: with box-sizing: border-box the inner
+     slab then fills the content box exactly and the frame is even on all four
+     sides. A margin left the child full height and it overhung the bottom. */
+  padding: var(--plaque-edge);
+  /* Lit from the upper left, so the rim reads as a raised bevel rather than a
+     flat band of colour. */
+  background: linear-gradient(152deg, #f2d288 0%, #c89c3e 32%, #8d6c27 62%, #4e3a10 100%);
+  clip-path: polygon(
+    var(--plaque-bevel) 0, 100% 0,
+    100% calc(100% - var(--plaque-bevel)), calc(100% - var(--plaque-bevel)) 100%,
+    0 100%, 0 var(--plaque-bevel));
+  /* drop-shadow follows the cut-corner silhouette; box-shadow would draw the
+     untrimmed rectangle. */
+  /* First shadow is a hard dark keyline that separates the shape from the
+     table; second is the cast shadow. */
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.95))
+          drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.plaque > span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  /* Nudged down, not up: Umbraal's ascenders make a box-centred label sit
+     visibly high. */
+  padding: 0.16rem var(--plaque-pad) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  background: linear-gradient(170deg, #3a2f20 0%, var(--ink-soft) 45%, #17120c 100%);
+  /* Face sits below the rim: hard shadow under the top edge, thin catch-light
+     along the bottom. */
+  box-shadow:
+    inset 0 3px 4px -1px rgba(0, 0, 0, 0.9),
+    inset 0 -2px 0 -1px rgba(242, 227, 195, 0.16);
+  clip-path: polygon(
+    var(--plaque-bevel) 0, 100% 0,
+    100% calc(100% - var(--plaque-bevel)), calc(100% - var(--plaque-bevel)) 100%,
+    0 100%, 0 var(--plaque-bevel));
+  font-family: 'Umbraal', ui-serif, Georgia, serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+  color: var(--bone);
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.plaque:hover:not(:disabled) { filter: brightness(1.12); }
+.plaque:active:not(:disabled) {
+  transform: translateY(1.5px);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
+.plaque:focus-visible { outline: 2px solid var(--parchment); outline-offset: 3px; }
+
+.plaque:disabled {
+  cursor: default;
+  filter: saturate(0.25) brightness(0.62);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(14, 11, 7, 0.55);
+}
+
+.panel {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Centred in the space above the plaque bar, hugging its own content, so
+     the picker is only as tall as it needs to be. */
+  top: calc(var(--gutter) + (100vh - var(--gutter) - var(--bar-space)) / 2);
+  transform: translate(-50%, -50%);
+  /* auto, not fit-content: a fixed-position box with only `left` set already
+     shrinks to fit, and iOS is unreliable about fit-content on height. */
+  height: auto;
+  max-height: calc(100vh - var(--gutter) - var(--bar-space));
+  width: auto;
+  max-width: calc(100vw - 2 * var(--gutter));
+  display: flex;
+  flex-direction: column;
+  padding: 0.6rem 0.7rem 0.7rem;
+  background:
+    linear-gradient(180deg, rgba(60, 48, 32, 0.5), rgba(0, 0, 0, 0)),
+    linear-gradient(180deg, var(--ink-soft), var(--ink));
+  border: 1px solid rgba(176, 138, 52, 0.45);
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.55);
+}
+
+@supports (height: 100dvh) {
+  .panel {
+    top: calc(var(--gutter) + (100dvh - var(--gutter) - var(--bar-space)) / 2);
+    max-height: calc(100dvh - var(--gutter) - var(--bar-space));
+  }
+}
+
+.hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: rgba(232, 220, 192, 0.5);
+}
+
+.panel-title {
+  margin: 0 0 0.75rem;
+  text-align: center;
+  font-family: 'Umbraal', ui-serif, Georgia, serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  letter-spacing: 0.03em;
+  color: var(--bone);
+}
+
+.rows {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: auto;
+  justify-content: center;
+  align-content: start;
+  gap: 0.18rem 1rem;
+}
+
+/* Each die is one three-cell row, so the set can go two-up in landscape
+   without the columns falling out of step. */
+.row {
+  display: grid;
+  grid-template-columns: var(--tile-w) var(--col-gap) var(--tile-w);
+  justify-content: center;
+}
+
+.row-source,
+.row-slot {
+  display: grid;
+  place-items: center;
+  width: var(--tile-w);
+  height: var(--tile-h);
+  position: relative;
+}
+
+.row-source { cursor: grab; }
+.row-source:active { cursor: grabbing; }
+
+.row-gutter {
+  display: grid;
+  place-items: center;
+  color: rgba(176, 138, 52, 0.34);
+  font-size: 0.85rem;
+}
+
+.row-slot {
+  border: 1px dashed rgba(176, 138, 52, 0.3);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.row-slot.over {
+  border-color: var(--brass);
+  background: rgba(176, 138, 52, 0.14);
+}
+
+.row-slot[data-count="0"] { cursor: default; }
+.row-slot:not([data-count="0"]) { cursor: grab; }
+
+.face {
+  display: block;
+  max-width: 3.3rem;
+  max-height: 3.3rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.badge {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.4rem;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.28rem;
+  display: grid;
+  place-items: center;
+  background: var(--oxblood);
+  color: var(--parchment);
+  border: 1px solid rgba(242, 227, 195, 0.6);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.badge.maxed { background: #3f3a2c; }
+
+#ghost {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0.5rem 0.75rem rgba(0, 0, 0, 0.6));
+  opacity: 0.92;
+}
+
+.summary-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.group + .group {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(176, 138, 52, 0.22);
+}
+
+.group-faces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.group-faces .face {
+  max-width: var(--summary-face);
+  max-height: var(--summary-face);
+}
+
+.empty {
+  margin: 0;
+  color: rgba(232, 220, 192, 0.45);
+  font-size: 0.85rem;
+}
+
+.fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: var(--ink);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.fallback-detail {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  max-width: 32rem;
+}
+
+@media (max-width: 34rem), (pointer: coarse) {
+  :root {
+    --plaque-h: 3.6rem;
+    --plaque-w-max: 7.7rem;
+    --plaque-pad: 0.7rem;
+    --tile-w: 4.6rem;
+    --tile-h: 4.1rem;
+    --col-gap: 1.1rem;
+  }
+  .plaque > span { font-size: 1.75rem; }
+  .face { max-width: 3.5rem; max-height: 3.5rem; }
+}
+
+@media (max-height: 30rem) {
+  :root {
+    --plaque-h: 2.7rem;
+    --gutter: 0.6rem;
+    --plaque-pad: 0.8rem;
+    --tile-w: 3.4rem;
+    --tile-h: 3rem;
+    --col-gap: 0.9rem;
+  }
+  .plaque > span { font-size: 1.35rem; }
+  .face { max-width: 2.6rem; max-height: 2.6rem; }
+  .rows { grid-template-columns: auto auto; }
+  .hint { margin-bottom: 0.35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plaque { transition: none; }
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1e1811">
+<meta name="description" content="Roll dice in 3D and read the faces that come up.">
+<title>Dice</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<canvas id="table" aria-label="Dice table"></canvas>
+
+<div id="picker-backdrop" class="backdrop" hidden></div>
+<div id="picker" class="panel" hidden role="dialog" aria-label="Choose dice">
+  <p class="hint">Drag a die to add/subtract.</p>
+  <div id="picker-rows" class="rows"></div>
+</div>
+
+<div id="summary-backdrop" class="backdrop" hidden></div>
+<div id="summary" class="panel summary" hidden role="dialog" aria-label="Roll result">
+  <h1 class="panel-title">Count</h1>
+  <div id="summary-body" class="summary-body"></div>
+</div>
+
+<!-- Above the overlays, so Roll stays live while the picker is open. -->
+<div class="plaques">
+  <button id="reroll" class="plaque" type="button" hidden><span>Reroll</span></button>
+  <button id="roll" class="plaque" type="button"><span>Roll</span></button>
+  <button id="count" class="plaque" type="button" disabled><span>Count</span></button>
+</div>
+
+<div id="fallback" class="fallback" hidden></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
