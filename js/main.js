@@ -6,7 +6,6 @@ import { createShakeDetector } from './shake.js';
 const ASSETS = 'assets/dice';
 const TABLE_TEXTURE = `${ASSETS}/table_surface.png`;
 const FONT_FAMILY = 'Umbraal';
-const SUMMARY_DELAY_MS = 500;
 
 // One page that adapts. Detection picks render quality and layout density.
 // ?mode=mobile or ?mode=desktop forces either.
@@ -170,11 +169,8 @@ async function main() {
     // The phone is often still moving as the dice stop.
     shake.suspend();
 
-    setTimeout(() => {
-      if (state.rolling) return;
-      showSummary();
-      refresh();
-    }, SUMMARY_DELAY_MS);
+    // No automatic summary. With a die or two the table already says what was
+    // rolled; Count is there for when a handful is hard to read.
   }
 
   rollBtn.addEventListener('click', () => {
