@@ -1,6 +1,7 @@
 import { DiceScene, CONFIG } from './scene.js';
 import { preloadKind } from './facepreview.js';
 import { Picker, DICE_TYPES, renderSummary } from './ui.js';
+import { createShakeDetector } from './shake.js';
 
 const ASSETS = 'assets/dice';
 const TABLE_TEXTURE = `${ASSETS}/table_surface.png`;
@@ -115,6 +116,14 @@ async function main() {
 
   const state = { rolling: false, results: null, lastKinds: null };
 
+  // Shake to roll, on phones only. Throws whatever is currently chosen in the
+  // picker, or repeats the last roll if there is one.
+  const shake = createShakeDetector(() => {
+    if (state.rolling || aboutOpen()) return;
+    const kinds = picker.open ? picker.selection : state.lastKinds;
+    if (kinds && kinds.length) doRoll(kinds);
+  });
+
   const summaryOpen = () => !summaryEl.hidden;
   const showSummary = () => {
     renderSummary(summaryBody, state.results);
@@ -158,6 +167,9 @@ async function main() {
     state.results = results;
     refresh();
 
+    // The phone is often still moving as the dice stop.
+    shake.suspend();
+
     setTimeout(() => {
       if (state.rolling) return;
       showSummary();
@@ -190,9 +202,111 @@ async function main() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (summaryOpen()) hideSummary();
+    if (aboutOpen()) closeTop();
+    else if (summaryOpen()) hideSummary();
     else if (picker.open) picker.hide();
     refresh();
+  });
+
+  // ---- about ----
+  const infoBtn = document.getElementById('info');
+  const aboutEl = document.getElementById('about');
+  const aboutBackdrop = document.getElementById('about-backdrop');
+  const aboutBody = document.getElementById('about-body');
+  let aboutLoaded = false;
+  let aboutJustClosed = false;
+
+  const noticeEl = document.getElementById('notice');
+  const noticeBody = document.getElementById('notice-body');
+  let topPanel = null;
+
+  const aboutOpen = () => topPanel !== null;
+  const dismissTop = () => closeTop();
+
+  function openTop(el) {
+    if (topPanel && topPanel !== el) topPanel.hidden = true;
+    topPanel = el;
+    el.hidden = false;
+    aboutBackdrop.hidden = false;
+    // Capture phase, so a click anywhere closes it before anything else can
+    // act on it -- including the panel itself.
+    document.addEventListener('pointerdown', dismissTop, true);
+  }
+
+  function closeTop() {
+    document.removeEventListener('pointerdown', dismissTop, true);
+    if (topPanel) topPanel.hidden = true;
+    topPanel = null;
+    aboutBackdrop.hidden = true;
+    // Swallows the click that follows this pointerdown, so pressing a corner
+    // dot while its panel is open closes it instead of closing and reopening.
+    aboutJustClosed = true;
+    setTimeout(() => { aboutJustClosed = false; }, 0);
+  }
+
+  function showNotice(lines) {
+    noticeBody.replaceChildren(...lines.map((text) => {
+      const p = document.createElement('p');
+      p.textContent = text;
+      return p;
+    }));
+    openTop(noticeEl);
+  }
+
+  async function openAbout() {
+    if (!aboutLoaded) {
+      try {
+        const res = await fetch('info.html', { cache: 'no-cache' });
+        if (res.ok) {
+          aboutBody.innerHTML = await res.text();
+          aboutLoaded = true;
+        }
+      } catch {
+        // The copy written into index.html stands in.
+      }
+    }
+    openTop(aboutEl);
+  }
+
+  infoBtn.addEventListener('click', () => {
+    if (aboutJustClosed) return;
+    openAbout();
+  });
+
+  // ---- shake toggle ----
+  const shakeBtn = document.getElementById('shake-toggle');
+  // Only worth offering where there is a sensor to read.
+  if (mobile && shake.supported) shakeBtn.hidden = false;
+
+  const SHAKE_TROUBLE = {
+    denied: [
+      'Motion access is switched off for this site.',
+      'In Safari, tap the page settings button at the left of the address bar, choose Website Settings, and turn on Motion & Orientation. Then tap the shake button again.',
+    ],
+    insecure: [
+      'Motion needs a secure connection.',
+      'Open the site over https rather than by IP address, and try again.',
+    ],
+    unsupported: ['This device has no motion sensor to read.'],
+    silent: [
+      'No motion readings are coming through.',
+      'Permission is granted, but the sensor is not reporting. Reloading the page usually clears this.',
+    ],
+  };
+
+  shakeBtn.addEventListener('click', async () => {
+    if (aboutJustClosed) return;
+    if (shake.enabled) {
+      shake.disable();
+      shakeBtn.setAttribute('aria-pressed', 'false');
+      return;
+    }
+    // The permission prompt has to come out of this tap.
+    shakeBtn.disabled = true;
+    const result = await shake.enable();
+    shakeBtn.disabled = false;
+    shakeBtn.setAttribute('aria-pressed', result === 'on' ? 'true' : 'false');
+    if (result !== 'on') showNotice(SHAKE_TROUBLE[result] || SHAKE_TROUBLE.denied);
   });
 
   let resizeTimer = null;

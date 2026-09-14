@@ -12,6 +12,7 @@
   --brass: #b08a34;
   --bone: #e8dcc0;
 
+  --dot-size: 1.6rem;
   --plaque-h: 3.25rem;
   --plaque-w-max: 7.27rem;
   --plaque-gap: 0.7rem;
@@ -326,6 +327,102 @@ body {
   margin: 0;
   color: rgba(232, 220, 192, 0.45);
   font-size: 0.85rem;
+}
+
+/* ---------------------------- about ---------------------------- */
+
+.corner-dot {
+  position: fixed;
+  bottom: calc(var(--gutter) * 0.7 + var(--safe-b));
+  z-index: 45;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid rgba(30, 24, 17, 0.45);
+  border-radius: 50%;
+  background: rgba(30, 24, 17, 0.18);
+  color: rgba(30, 24, 17, 0.75);
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.corner-dot:hover,
+.corner-dot:focus-visible { opacity: 1; }
+
+.info-dot {
+  right: calc(var(--gutter) * 0.7);
+  font-family: ui-serif, Georgia, serif;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Mirrors the info dot on the opposite corner. */
+.shake-dot { left: calc(var(--gutter) * 0.7); }
+
+.shake-dot img {
+  width: auto;
+  height: calc(var(--dot-size) * 0.72);
+  display: block;
+  pointer-events: none;
+}
+
+/* On: brass ring, full strength, so the state is readable at a glance. */
+.shake-dot[aria-pressed="true"] {
+  opacity: 1;
+  border-color: var(--brass);
+  background: rgba(176, 138, 52, 0.3);
+}
+
+/* Above the picker, the summary and the drag ghost. */
+.about-backdrop {
+  z-index: 70;
+  background: rgba(14, 11, 7, 0.5);
+}
+
+.about {
+  z-index: 72;
+  width: min(21rem, calc(100vw - 2 * var(--gutter)));
+  text-align: center;
+  padding: 1.1rem 1.25rem;
+}
+
+/* Instructions read better ranged left than centred like the credits. */
+#notice { text-align: left; }
+
+#notice .panel-text p:first-child {
+  font-family: 'Umbraal', ui-serif, Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--brass);
+}
+
+.panel-text p {
+  margin: 0 0 0.7rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: rgba(232, 220, 192, 0.85);
+}
+
+.panel-text p:last-child { margin-bottom: 0; }
+
+.panel-text .who {
+  display: block;
+  font-family: 'Umbraal', ui-serif, Georgia, serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  color: var(--brass);
+}
+
+.panel-text .copyright {
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(176, 138, 52, 0.22);
+  font-size: 0.75rem;
+  color: rgba(232, 220, 192, 0.5);
 }
 
 .fallback {

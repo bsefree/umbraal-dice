@@ -31,6 +31,28 @@
   <button id="count" class="plaque" type="button" disabled><span>Count</span></button>
 </div>
 
+<!-- Motion stays off until switched on here, so nothing prompts unasked. -->
+<button id="shake-toggle" class="corner-dot shake-dot" type="button" hidden
+        aria-pressed="false" aria-label="Shake to roll">
+  <img src="assets/shake.png" alt="">
+</button>
+
+<!-- Sits above every other overlay, and any click anywhere closes it. -->
+<button id="info" class="corner-dot info-dot" type="button" aria-label="About this app">i</button>
+<div id="about-backdrop" class="backdrop about-backdrop" hidden></div>
+<div id="about" class="panel about" hidden role="dialog" aria-label="About">
+  <div id="about-body" class="panel-text">
+    <!-- Replaced by info.html at runtime; this copy shows if the fetch fails. -->
+    <p><span class="who">Boris Woloszyn:</span> Artwork, game design, and concept.</p>
+    <p><span class="who">M Jake Pushie:</span> Consulting, rules, app design.</p>
+    <p class="copyright">&copy; 2026 Westfalia Miniatures</p>
+  </div>
+</div>
+
+<div id="notice" class="panel about" hidden role="dialog" aria-label="Notice">
+  <div id="notice-body" class="panel-text"></div>
+</div>
+
 <div id="fallback" class="fallback" hidden></div>
 
 <script type="module" src="js/main.js"></script>
