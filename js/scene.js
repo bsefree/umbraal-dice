@@ -8,20 +8,23 @@ export const CONFIG = {
   cameraElevation: 75,
   fov: 42,
 
-  // Two lights. A single bright one clips the top faces to flat white and
-  // leaves the sides on ambient alone, which kills the shading that makes
-  // edges read.
-  ambient: 0.45,
-  keyLight: { intensity: 0.65, position: [3, -4, 8] },
-  fillLight: { intensity: 0.25, position: [-4, 3, 3] },
+  // Ambient sets the floor -- how close a face pointing away from the light
+  // gets to its true painted colour. The key adds the shading on top.
+  // Raise all three together (or use lightBoost) for overall brightness;
+  // raise ambient alone, or lower the key, to soften the shading further.
+  ambient: 0.95,
+  keyLight: { intensity: 0.45, position: [3, -4, 8] },
+  fillLight: { intensity: 0.18, position: [-4, 3, 3] },
+  // Single multiplier over all three, for tuning without touching the ratio.
+  lightBoost: 1,
 
-  // Table area per die. Lower zooms in and makes the dice look bigger.
+  // Compensates the table for the brighter lighting so it stays as it was.
   areaPerDie: 28.8,
   arenaMin: 4.5,
   arenaMax: 16,
 
   edgeColor: 0x1a1a1a,
-  tableBrightness: 1.3,   // multiplies the table texture only, not the dice
+  tableBrightness: 0.93,  // multiplies the table texture only, not the dice
   shadows: true,
   shadowMapSize: 2048,
   maxPixelRatio: 2,
@@ -72,9 +75,10 @@ export class DiceScene {
   }
 
   _buildLights() {
-    this.scene.add(new THREE.AmbientLight(0xffffff, CONFIG.ambient));
+    const boost = CONFIG.lightBoost ?? 1;
+    this.scene.add(new THREE.AmbientLight(0xffffff, CONFIG.ambient * boost));
 
-    const key = new THREE.DirectionalLight(0xfff4e2, CONFIG.keyLight.intensity);
+    const key = new THREE.DirectionalLight(0xfff4e2, CONFIG.keyLight.intensity * boost);
     key.position.set(...CONFIG.keyLight.position);
     if (CONFIG.shadows) {
       key.castShadow = true;
@@ -85,7 +89,7 @@ export class DiceScene {
     this.scene.add(key, key.target);
     this.keyLight = key;
 
-    const fill = new THREE.DirectionalLight(0xdde6ff, CONFIG.fillLight.intensity);
+    const fill = new THREE.DirectionalLight(0xdde6ff, CONFIG.fillLight.intensity * boost);
     fill.position.set(...CONFIG.fillLight.position);
     this.scene.add(fill);
   }
