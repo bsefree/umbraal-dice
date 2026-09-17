@@ -417,10 +417,65 @@ body {
   color: var(--brass);
 }
 
-.panel-text .copyright {
+/* Long enough to need scrolling on a short phone in landscape. */
+.panel-text {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.panel-text .fair-title {
   margin-top: 1rem;
   padding-top: 0.7rem;
   border-top: 1px solid rgba(176, 138, 52, 0.22);
+  font-family: 'Umbraal', ui-serif, Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--brass);
+}
+
+.fair-stats {
+  width: 100%;
+  margin: 0.6rem 0 0.7rem;
+  border-collapse: collapse;
+  font-size: 0.63rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.3;
+}
+
+.fair-stats th {
+  padding-bottom: 0.25rem;
+  font-weight: 600;
+  color: var(--brass);
+}
+
+.fair-stats td {
+  padding: 0.1rem 0;
+  color: rgba(232, 220, 192, 0.82);
+}
+
+/* Row labels range left, figures range right. */
+.fair-stats td:first-child,
+.fair-stats th:first-child {
+  text-align: left;
+  padding-right: 0.4rem;
+  color: rgba(232, 220, 192, 0.5);
+}
+
+/* Expected values and df, set apart from the measured figures. */
+.fair-stats i {
+  font-style: normal;
+  color: rgba(232, 220, 192, 0.42);
+}
+
+.panel-text .fair-note {
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: rgba(232, 220, 192, 0.5);
+}
+
+.panel-text .copyright {
+  margin-top: 1rem;
   font-size: 0.75rem;
   color: rgba(232, 220, 192, 0.5);
 }

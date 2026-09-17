@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#1e1811">
 <meta name="description" content="Roll dice in 3D and read the faces that come up.">
-<title>Dice</title>
+<title>Umbraal Dice Roller</title>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
-<canvas id="table" aria-label="Dice table"></canvas>
+<canvas id="table" aria-label="Umbraal dice table"></canvas>
 
 <div id="picker-backdrop" class="backdrop" hidden></div>
 <div id="picker" class="panel" hidden role="dialog" aria-label="Choose dice">
@@ -43,9 +43,20 @@
 <div id="about" class="panel about" hidden role="dialog" aria-label="About">
   <div id="about-body" class="panel-text">
     <!-- Replaced by info.html at runtime; this copy shows if the fetch fails. -->
-    <p><span class="who">Boris Woloszyn:</span> Artwork, game design, and concept.</p>
-    <p><span class="who">M Jake Pushie:</span> Consulting, rules, app design.</p>
+    <p><span class="who">Boris Woloszyn:</span> Artwork, concept, rules, and creative lead.</p>
+    <p><span class="who">M Jake Pushie:</span> Consulting, quest design, rules, and app design.</p>
     <p class="copyright">&copy; 2026 Westfalia Miniatures</p>
+    <p class="fair-title">Umbraal is brutal and unforgiving, but the dice are fair.*</p>
+    <table class="fair-stats">
+      <tr><th scope="col"></th><th scope="col">D6</th><th scope="col">D10</th></tr>
+      <tr><td>throws</td><td>40,000</td><td>40,000</td></tr>
+      <tr><td>per-face deviation</td><td>&minus;1.5% / +2.4%</td><td>&minus;3.5% / +3.0%</td></tr>
+      <tr><td>&chi;&sup2; faces</td><td>5.7 <i>df</i> 5</td><td>11.2 <i>df</i> 9</td></tr>
+      <tr><td>mean of two</td><td>6.985 <i>/ 7</i></td><td>8.980 <i>/ 9</i></td></tr>
+      <tr><td>sd of two</td><td>2.407 <i>/ 2.415</i></td><td>4.088 <i>/ 4.062</i></td></tr>
+      <tr><td>&chi;&sup2; independence</td><td>34.3 <i>df</i> 35</td><td>96.3 <i>df</i> 99</td></tr>
+    </table>
+    <p class="fair-note">* based on dice physics.</p>
   </div>
 </div>
 
