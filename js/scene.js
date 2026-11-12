@@ -341,6 +341,36 @@ export class DiceScene {
     this.materialCache.set(kind, materials);
   }
 
+  /**
+   * Points at a different artwork folder and rebuilds the materials. Dice
+   * already settled on the table are re-skinned in place, so the switch does
+   * not disturb a roll that has been read but not cleared.
+   *
+   * The caller must clear the texture caches in facepreview.js first,
+   * otherwise ensureKind just hands back what it built from the old folder.
+   */
+  async setAssetsDir(dir) {
+    if (dir === this.assetsDir) return;
+    this.assetsDir = dir;
+
+    for (const materials of this.materialCache.values()) {
+      for (const material of materials) {
+        if (material.map) material.map.dispose();
+        material.dispose();
+      }
+    }
+    this.materialCache.clear();
+
+    for (const kind of new Set(this.world.dice.map((d) => d.kind))) {
+      await this.ensureKind(kind);
+    }
+    this.world.dice.forEach((die, i) => {
+      const mesh = this.meshes[i];
+      if (mesh) mesh.material = this.materialCache.get(die.kind);
+    });
+    this.requestRender();
+  }
+
   _makeDieMesh(kind) {
     const { faces, edges } = this._geometryFor(KIND_TO_TYPE(kind));
     const mesh = new THREE.Mesh(faces, this.materialCache.get(kind));

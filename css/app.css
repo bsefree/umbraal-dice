@@ -480,6 +480,27 @@ body {
   color: rgba(232, 220, 192, 0.5);
 }
 
+.dice-set-toggle {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: 0.9rem;
+  padding: 0.7rem 0 0;
+  border: 0;
+  border-top: 1px solid rgba(176, 138, 52, 0.22);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--brass);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 120ms ease, opacity 120ms ease;
+}
+
+.dice-set-toggle:hover { color: var(--bone); }
+.dice-set-toggle:disabled { cursor: default; opacity: 0.45; }
+
 .fallback {
   position: fixed;
   inset: 0;

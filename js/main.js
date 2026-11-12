@@ -1,9 +1,15 @@
 import { DiceScene, CONFIG } from './scene.js';
-import { preloadKind } from './facepreview.js';
-import { Picker, DICE_TYPES, renderSummary } from './ui.js';
+import { preloadKind, resetTextureCache } from './facepreview.js';
+import { Picker, DICE_TYPES, renderSummary, resetImageCache } from './ui.js';
 import { createShakeDetector } from './shake.js';
 
 const ASSETS = 'assets/dice';
+
+// Always starts on the standard set; the choice is not remembered between loads.
+const DICE_SETS = {
+  standard: { dir: 'assets/dice', label: 'Revert to old dice graphics', other: 'old' },
+  old: { dir: 'assets/dice/old', label: 'Use standard Umbraal dice graphics', other: 'standard' },
+};
 const TABLE_TEXTURE = `${ASSETS}/table_surface.png`;
 const FONT_FAMILY = 'Umbraal';
 
@@ -303,6 +309,56 @@ async function main() {
     shakeBtn.disabled = false;
     shakeBtn.setAttribute('aria-pressed', result === 'on' ? 'true' : 'false');
     if (result !== 'on') showNotice(SHAKE_TROUBLE[result] || SHAKE_TROUBLE.denied);
+  });
+
+  // ---- dice artwork set ----
+  const diceSetBtn = document.getElementById('dice-set-toggle');
+  let diceSet = 'standard';
+  diceSetBtn.textContent = DICE_SETS[diceSet].label;
+
+  async function switchDiceSet() {
+    if (state.rolling || diceSetBtn.disabled) return;
+    const wanted = DICE_SETS[diceSet].other;
+    const previous = diceSet;
+
+    diceSetBtn.disabled = true;
+    try {
+      resetTextureCache();
+      resetImageCache();
+      await Promise.all(DICE_TYPES.map((d) => preloadKind(d.kind, DICE_SETS[wanted].dir, fontFamily)));
+      await scene.setAssetsDir(DICE_SETS[wanted].dir);
+      diceSet = wanted;
+    } catch (err) {
+      // Most likely the folder or a file is missing. Put everything back.
+      resetTextureCache();
+      resetImageCache();
+      await Promise.all(DICE_TYPES.map((d) => preloadKind(d.kind, DICE_SETS[previous].dir, fontFamily)));
+      await scene.setAssetsDir(DICE_SETS[previous].dir);
+      diceSet = previous;
+      showNotice(['That artwork could not be loaded.',
+        `Check that ${DICE_SETS[wanted].dir}/ holds the same face files as assets/dice/. ${err.message}`]);
+    }
+    diceSetBtn.textContent = DICE_SETS[diceSet].label;
+    diceSetBtn.disabled = false;
+    picker.repaint();
+    if (summaryOpen()) renderSummary(summaryBody, state.results);
+  }
+
+  // pointerdown, not click: the capture-phase dismiss hides the panel during
+  // this same event, and a click is never dispatched to a display:none button.
+  // The pointerdown path was fixed when the event was dispatched, so this
+  // still fires -- after the panel has closed, which is what we want.
+  diceSetBtn.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    switchDiceSet();
+  });
+
+  // Keyboard activation raises no pointer event, so close the panel here.
+  diceSetBtn.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    closeTop();
+    switchDiceSet();
   });
 
   let resizeTimer = null;

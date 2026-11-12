@@ -51,6 +51,10 @@ const silhouette = (kind) => imgFrom(`sil:${kind}`, () => {
   return c;
 });
 
+export function resetImageCache() {
+  urlCache.clear();
+}
+
 export class Picker {
   constructor(panel, rowsEl, backdrop) {
     this.panel = panel;
@@ -93,6 +97,12 @@ export class Picker {
   hide() {
     this.panel.hidden = true;
     this.backdrop.hidden = true;
+  }
+
+  // Rebuilds every tile from the current artwork. Counts live in this.counts
+  // and _paintSlot re-reads them, so a selection in progress is preserved.
+  repaint() {
+    this._build();
   }
 
   reset() {

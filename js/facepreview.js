@@ -72,6 +72,12 @@ export async function preloadKind(kind, assetsDir, fontFamily) {
 
 export const texturesFor = (kind) => textureCache.get(kind);
 
+// Drops every built texture so the next preload reads from a different folder.
+export function resetTextureCache() {
+  textureCache.clear();
+  faceCache.clear();
+}
+
 // readFaceValue returns material - 1, so the texture for a value is always
 // at material value + 1 regardless of capCount.
 export function faceImage(kind, value) {
